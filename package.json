@@ -1,0 +1,27 @@
+{
+  "name": "nodejs-academy",
+  "version": "1.0.0",
+  "description": "Project for Globant NodeJS Academy",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diego8arock/nodejs-academy.git"
+  },
+  "author": "diego.ochoa@globant.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/diego8arock/nodejs-academy/issues"
+  },
+  "homepage": "https://github.com/diego8arock/nodejs-academy#readme",
+  "devDependencies": {
+    "eslint": "^7.30.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.2"
+  }
+}
