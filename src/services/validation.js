@@ -3,6 +3,15 @@ const validUrl = require('valid-url');
 const yup = require('yup');
 const { buildYup } = require('json-schema-to-yup');
 
+const requiredNodes = [
+  'id',
+  'title',
+  'author',
+  'modifiedAt',
+  'readMins',
+  'source',
+];
+
 const regexOptions = {
   id: '(\\{){0,1}[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}(\\}){0,1}',
   title: '[^(?!\\s*$)id.+]{1,255}',
@@ -62,8 +71,18 @@ function validateStringRegex(regexp, data, node, num) {
       };
 }
 
-function validateJsonArrayItem(item, itemNum) {
+function validateJsonItemRequieredFields(item, itemNum) {
   const errors = [];
+  const keys = Object.keys(item);
+  const diff = requiredNodes.filter((x) => !keys.includes(x));
+  diff.forEach((x) => {
+    errors.push(`Node ${x} is required in item number ${itemNum}`);
+  });
+  return errors;
+}
+
+function validateJsonArrayItem(item, itemNum) {
+  const errors = validateJsonItemRequieredFields(item, itemNum);
   Object.keys(item).forEach((key) => {
     const val = item[key];
     switch (key) {
@@ -152,34 +171,44 @@ function validateJsonArrayItem(item, itemNum) {
 }
 
 function validateJsonFileByCustomLogic(file) {
-  const jsonRawData = fs.readFileSync(file, 'utf8');
-  const jsonData = JSON.parse(jsonRawData);
   const errors = [];
-  let itemNum = 1;
-  Object.keys(jsonData).forEach((key) => {
-    const item = jsonData[key];
-    errors.push(validateJsonArrayItem(item, itemNum));
-    itemNum += 1;
-  });
+  try {
+    const jsonRawData = fs.readFileSync(file, 'utf8');
+    const jsonData = JSON.parse(jsonRawData);
+
+    let itemNum = 1;
+    Object.keys(jsonData).forEach((key) => {
+      const item = jsonData[key];
+      errors.push(validateJsonArrayItem(item, itemNum));
+      itemNum += 1;
+    });
+  } catch (error) {
+    errors.push(error.message);
+  }
   return errors;
 }
 
 function validateJsonFileBySchema(file, schema) {
-  const jsonRawData = fs.readFileSync(file, 'utf8');
-  const jsonData = JSON.parse(jsonRawData);
-  const schemaRawData = fs.readFileSync(schema, 'utf8');
-  const schemaData = JSON.parse(schemaRawData);
   const errors = [];
-  const yupSchema = buildYup(schemaData, config);
-  yupSchema.fields.url = yup.string().url();
-  Object.keys(jsonData).forEach((key) => {
-    const item = jsonData[key];
-    try {
-      yupSchema.validateSync(item);
-    } catch (error) {
-      errors.push(error.message);
-    }
-  });
+  try {
+    const jsonRawData = fs.readFileSync(file, 'utf8');
+    const jsonData = JSON.parse(jsonRawData);
+    const schemaRawData = fs.readFileSync(schema, 'utf8');
+    const schemaData = JSON.parse(schemaRawData);
+
+    const yupSchema = buildYup(schemaData, config);
+    yupSchema.fields.url = yup.string().url();
+    Object.keys(jsonData).forEach((key) => {
+      const item = jsonData[key];
+      try {
+        yupSchema.validateSync(item);
+      } catch (error) {
+        errors.push(error.message);
+      }
+    });
+  } catch (error) {
+    errors.push(error.message);
+  }
   return errors;
 }
 
