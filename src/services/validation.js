@@ -176,11 +176,9 @@ function validateJsonFileByCustomLogic(file) {
     const jsonRawData = fs.readFileSync(file, 'utf8');
     const jsonData = JSON.parse(jsonRawData);
 
-    let itemNum = 1;
-    Object.keys(jsonData).forEach((key) => {
+    Object.keys(jsonData).forEach((key, index) => {
       const item = jsonData[key];
-      errors.push(validateJsonArrayItem(item, itemNum));
-      itemNum += 1;
+      errors.push(validateJsonArrayItem(item, index + 1));
     });
   } catch (error) {
     errors.push(error.message);
